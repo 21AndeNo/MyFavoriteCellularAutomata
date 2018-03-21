@@ -3,7 +3,7 @@
  * My Favorite Cellular Automata
  *
  * @template Andrew Smith
- * @student ____(your name)____
+ * @student Noah Anderson
  */
 
 import processing.svg.*;
@@ -17,8 +17,8 @@ void setup() {
   frameRate(60);
   background(255);
   ellipseMode(CORNER);
-  requestedCellsPerGeneration = 300;
-  requestedRuleNumber = 12;
+  requestedCellsPerGeneration = 600;
+  requestedRuleNumber = 99;
   drawScaleFactor = 0.9;
   c = new CellularAutomaton(requestedCellsPerGeneration, requestedRuleNumber);
 }
@@ -28,7 +28,7 @@ void draw() {
     c.show();
     c.evolve();
   } else {
-    //c.showLabel();  // TODO: uncomment this line after the rest of your code is done
+    c.showLabel();  // TODO: uncomment this line after the rest of your code is done
     noLoop();
   }
 }
@@ -51,7 +51,14 @@ class CellularAutomaton {
    *  Precondition: none
    */
   public CellularAutomaton(int n, int r) {
-    // TODO: implement this constructor
+    cellArray = new String[n];
+    for (int i = 0; i < cellArray.length; i++) {
+      cellArray[i] = "0";
+    }
+    cellArray[n/2] = "1";
+    ruleNumber = r;
+    currentGenerationNumber = 0;
+    canGrow = true;
   }
 
   public void updateCurrentGenerationNumber() {
@@ -76,7 +83,13 @@ class CellularAutomaton {
    *  Precondition: none
    */
   public void setRuleNumber(int n) {
-    // TODO: implement this method
+    if (n > 255) {
+      ruleNumber = 255;
+    } else if (n < 0) {
+      ruleNumber = 0;
+    } else {
+      ruleNumber = n;
+    }
   }
 
   public int getRuleNumber() {
@@ -92,8 +105,10 @@ class CellularAutomaton {
    */
   public String getRulePatternAsString() {
     String output = Integer.toBinaryString(getRuleNumber());
-    // TODO: finish implementing this method
-    return "";
+    while (output.length() < 8) {
+      output = "0" + output;
+    } 
+    return output;
   }
 
   /**
@@ -105,7 +120,8 @@ class CellularAutomaton {
    */
   public String[] getRulePatternAsArray() {
     String[] output = new String[8];
-    // TODO: finish implementing this method
+    String s = this.getRulePatternAsString();
+    for (int i = 0; i < s.length(); i++) output[i] = s.substring(i, i + 1);
     return output;
   }
 
@@ -129,9 +145,11 @@ class CellularAutomaton {
   private void updateCellArray() {
     String[] newArray = new String[cellArray.length];
     for (int i = 1; i < newArray.length - 1; i++) {
-      newArray[i] = getNewCellState("000");   // TODO: replace "000" with something more appropriate
+      newArray[i] = getNewCellState(cellArray[i - 1] + cellArray[i] + cellArray[i + 1]);
     }
-    // TODO: finish implementing this method
+    newArray[0] = "0";
+    newArray[newArray.length - 1] = "0";
+    cellArray = newArray;
   }
 
   /**
@@ -144,13 +162,32 @@ class CellularAutomaton {
    */
   private String getNewCellState(String neighborhood) {
     String[] arr = getRulePatternAsArray();
-    if (neighborhood == "111") {      // TODO: fix this so it uses a correct String comparison method
-      return arr[0];
-    } else {
-      return "0";
+    String output;
+    switch(neighborhood) {
+    case "111":
+      output = arr[0];
+      break;
+    case "110":
+      output = arr[2];
+      break;
+    case "101":
+      output = arr[3];
+      break;
+    case "100":
+      output = arr[4];
+      break;
+    case "010":
+      output = arr[5];
+      break;
+    case "001":
+      output = arr[6];
+      break;
+    default:
+      output = arr[7];
     }
-    // TODO: change this method so it handles all possible 3-digit neighborhoods
+    return output;
   }
+  // TODO: change this method so it handles all possible 3-digit neighborhoods
 
   private float getCellSize() {
     return (float)width / cellArray.length;
@@ -162,8 +199,8 @@ class CellularAutomaton {
 
   public void show() {
     for (int i = 0; i < cellArray.length; i++) {
-      if (true) {  // TODO: replace true with a useful predicate
-        fill(#952424);
+      if (cellArray[i].equals("1")) {
+        fill(0);
         noStroke();
         rect(i * getCellSize(), 30 + getCurrentGenerationNumber() * getCellSize(), getDrawSize(), getDrawSize());
       }
@@ -179,7 +216,7 @@ class CellularAutomaton {
     int internalPadding = 40;
     textAlign(CENTER, TOP);
     fill(0);
-    textFont(createFont("Courier", 32));
+    textFont(createFont("Courrier", 32));
     text("Rule " + getRuleNumber(), xAnchor, yAnchor);
     String[] rulePattern = getRulePatternAsArray();
     for (int i = 0; i < rulePattern.length; i++) {
@@ -212,6 +249,7 @@ class CellularAutomaton {
 
 void keyPressed() {
   if (key == 'r') {
+    println(":-)");
     beginRecord(SVG, "output.svg");
     noFill();
     stroke(0);
@@ -225,7 +263,7 @@ void keyPressed() {
       c.show();
       c.evolve();
     }
-    //c.showLabel();  // TODO: uncomment this line after the rest of your coding is done
+    c.showLabel();
     endRecord();
   }
 }
